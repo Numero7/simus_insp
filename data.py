@@ -1,8 +1,10 @@
 import pandas as pd
 import numpy as np
 import os
-
-
+import run as run
+import random as rnd
+import json as json
+    
 """
 load a realistic popularity profile from 2022 data
 """
@@ -13,83 +15,285 @@ def compute_model_from_historique(filename):
   #create lists from panda format
   matching = df["Ministère"].tolist()
 
-  schools = list(set(matching))
-  capacites = list(map(lambda school: matching.count(school), schools))
+  employers = list(set(matching))
+  capacites = list(map(lambda school: matching.count(school), employers))
 
-  nb_schools = len(schools)
-  affectes = [0] * nb_schools
+  nb_employers = len(employers)
+  affectes = [0] * nb_employers
   nb_candidats = sum( map(lambda r : str(r).isnumeric(), df["Rang"].tolist()) )
   for rang in range(nb_candidats):
     match = matching[rang]
-    for school_id in range(nb_schools):
-      school = schools[school_id]
+    for job_id in range(nb_employers):
+      school = employers[job_id]
       if match == school:
-        affectes[school_id] = affectes[school_id] + 1
+        affectes[job_id] = affectes[job_id] + 1
         break
   
   proposals = list(map(lambda r : set(matching[r:]) , range(nb_candidats)))
-  nb_oui = list(map(lambda school : matching.count(school) , schools))
+  nb_oui = list(map(lambda school : matching.count(school) , employers))
 
   #loop for updating popularities  
-  popularities = [1] * len(schools)
+  popularities = [1] * len(employers)
   while 1:
-    popularities, delta = update_popularities(popularities, proposals, nb_oui, schools)
+    popularities, delta = update_popularities(popularities, proposals, nb_oui, employers)
     if delta < 0.01:
       break
+
+  jobs_popularities = []
+  jobs_names = []
+
+  #created a sorted list of jobs, ordered by popularity,
+  #the most popular first
+  sorted_employers_ids = sorted(range(len(employers)), key=lambda x: - popularities[x])
+  for employer_id in sorted_employers_ids:
+    capacite = capacites[employer_id]
+    for _ in range(capacite):
+      jobs_names.append(employers[employer_id])
+      jobs_popularities.append(popularities[employer_id])
+
+  assert sum(capacites) == len(jobs_names)
   
-  return schools,popularities,capacites
+  return { 
+          "nb_candidates" : nb_candidats,
+          "employers_names" : employers,
+          "employers_popularities" : popularities,
+          "employers_capacities" : capacites,
+          "jobs_names" : jobs_names,
+          "jobs_popularities" : jobs_popularities
+        }
   
   
 """one loop of the popularity update"""
-def update_popularities(pops, proposals, nb_oui, schools):
-  nb_schools = len(schools)
-  school_ids = range(nb_schools)
+def update_popularities(pops, proposals, nb_oui, jobs):
+  nb_jobs = len(jobs)
+  job_ids = range(nb_jobs)
   
-  #precompute inv of sum of popularities recevied by each student
+  #precompute inv of sum of popularities of proposals received by each candidate
   candidats = range(len(proposals))
   sum_pops = [0] * len(candidats)
-  for school_id in school_ids:
-    school = schools[school_id]
-    pop = pops[school_id]
+  for job_id in job_ids:
+    school = jobs[job_id]
+    pop = pops[job_id]
     for c in candidats:
       if school in proposals[c]:
          sum_pops[c] += pop
   sum_inv_pops = list(map(lambda pop : 1.0 / pop, sum_pops))
 
   new_pops = [0] * len(pops)
-  for school_id in school_ids:
-    school = schools[school_id]
+  for job_id in job_ids:
+    school = jobs[job_id]
     sum_inv = 0.0
     for c in candidats:
       if school in proposals[c]:
         sum_inv += sum_inv_pops[c]
-    if sum_inv == 0:
-      None
-    new_pops[school_id] = nb_oui[school_id] / sum_inv
+    assert sum_inv > 0
+    new_pops[job_id] = nb_oui[job_id] / sum_inv
 
-  #normalize  
+  #normalize, average pop should be one
   total_pops = sum(new_pops)
-  new_pops = list(map(lambda x : nb_schools * x /total_pops, new_pops))
+  new_pops = list(map(lambda x : nb_jobs * x /total_pops, new_pops))
 
   delta = map(lambda rank: abs(pops[rank] - new_pops[rank]) / abs(pops[rank] + new_pops[rank]), range(0,len(pops)))
 
   return new_pops, max(delta)
 
-"""convert a tsirng rank to a numeric rank"""
+"""convert a string rank to a numeric rank"""
 def to_rank(rang_str):
   if str(rang_str).isnumeric():
     return int(str(rang_str))
   else:
     return -1
 
-if __name__ == "__main__":
-  schools, popularities, capacities = compute_model_from_historique("data/2022.csv")
+"""
+Generate a "realistic" popularity profile from data
+- some candidates are intrinsically more popular
+- jobs have popularities loaded from data
+- some candidate-job pairs share interests
+We define pop[p,s] = popularity p and s give each other
+
+Pr[p prefers s1 to s2] = pop[p,s1] / (pop[p,s1] + pop[p,s1])
+Pr[s prefers p1 to p2] = pop[p1,s] / (pop[p1,s] + pop[p2,s])
+
+Multiplying all popularity by a constant
+does not change the distribution
+
+Because we deal with large popularity, we store the log
+"""
+def generate_logpop(model):
+  jobs = model["jobs_names"]
+  popularities = model["jobs_popularities"]
+  nb_candidates = model["nb_candidates"]
+
+  nb_jobs = len(jobs)
+  logpop = np.zeros((nb_jobs, nb_candidates))
   
-  with open("res.csv", "w") as f:
+  # step 1: load jobs pops
+  for job_id in range(nb_jobs):
+    logpop[job_id,:] += np.log(popularities[job_id])
+  
+  # step 2: some candidates are intrinsically more popular, but quite uniformly though
+  alpha = 0.2
+  for s in range(nb_candidates):
+    logpop[:,s] += np.log(1/(s+1)**alpha)
+  
+  # step 3: some candidate-job pairs share interests
+  # in that case the mutual popularity is multiplied by the factor
+  percent, factor = 0.05, 10
+  for _ in range(int(percent*nb_candidates*nb_jobs)):
+    p,s = np.random.randint([nb_jobs,nb_candidates])
+    logpop[p,s] += np.log(factor)
+  
+  return logpop
+
+"""save model as csv"""
+def serialize(model,filename):
+  names = model["employers_names"]
+  popularities = model["employers_popularities"]
+  capacities = model["employers_capacities"]
+  with open(filename + ".csv", "w") as f:
     f.write("nom;capacite;popularite\n")
     min_pop = min(popularities)
-    for school_id in range(len(schools)):
-      school = schools[school_id]
-      pop = popularities[school_id]
-      capa = capacities[school_id]
+    for job_id in range(len(names)):
+      school = names[job_id]
+      pop = popularities[job_id]
+      capa = capacities[job_id]
       f.write('\"' + school[:60] + '\";' + str(capa) + ";" + str(int(pop / min_pop)) + "\n")
+
+  with open(filename + ".json", "w") as f:
+    json.dump(model, f)
+
+def deserialize(model,filename):
+  with open(filename + ".json", "r") as f:
+    return json.load(f)
+
+
+def select_wishes(pr):
+
+  nb_favorite = 5
+  nb_medium = 3
+  nb_safe = 3
+  min_rank_medium = 6
+  min_rank_safe = 1 + len(pr) // 2
+
+  # truncate the preference of candidates, 10 wishes each
+  # 5 favorite 
+  result = [pr[i] for i in range(nb_favorite)]
+
+  # 3 medium, meaning with absolute rank between 6 and len(pr)//2
+  for i in range(nb_favorite + 1,len(pr)):
+    job_id = pr[i]
+    if not job_id in result and min_rank_medium <= job_id <= min_rank_safe:
+      result.append(job_id)
+      if(len(result) >= nb_favorite + nb_medium):
+        break
+  
+  # 3 secure
+  for i in range(nb_favorite + 1,len(pr)):
+    job_id = pr[i]
+    if not job_id in result and min_rank_safe < job_id:
+      result.append(job_id)
+      if(len(result) >= nb_favorite + nb_medium + nb_safe):
+        break
+
+  return result
+
+def select_auditions(job_id, nb_jobs, pref, prefC):
+
+  #more auditions for less popular jobs
+  #from 8 auditions for the most popular to 16 auditions for the least popular  
+  auditions_nb = 8 + (8 * job_id) // nb_jobs
+
+  #we add candidates who made a wishes, until the nb of auditions is reached
+  result = []
+  for i in range(len(pref)):
+    st_id = pref[i]
+    if job_id in prefC[st_id] :
+        result.append(st_id)
+    if len(result) >= auditions_nb:
+      break
+
+  return result
+
+def truncate(prefJ, prefC):
+  prefCtrunc = [ select_wishes(pr) for pr in prefC ]
+  prefJtrunc = []
+  for job_id in range(len(prefJ)):
+    auditions = select_auditions(job_id, len(prefJ), prefJ[job_id],prefC)
+    prefJtrunc.append(auditions)
+  return prefJtrunc, prefCtrunc
+
+def print_result(model, matchJ, matchC):
+  nb_cand = len(matchC)
+  nb_cand_unmatched = matchC.count(None)
+  nb_cand_matched = nb_cand - nb_cand_unmatched
+  nb_jobs = len(matchJ)
+  nb_jobs_unmatched = matchJ.count(None)
+  nb_jobs_matched = nb_jobs - nb_jobs_unmatched
+
+  print("\n\n")
+  print("Nombre de candidats avec affectation à l'issue du 1er tour {} / {}.\n".format(nb_cand_matched , nb_cand))
+  print("Nombre de positions pourvues à l'issue du 1er tour {} / {}.\n".format(nb_jobs_matched, nb_jobs))
+  print("\n")
+
+  print("Nombre de candidats au second tour {}.\n".format(nb_cand_unmatched))
+  print("Nombre de jobs au second tour {}.\n".format(nb_jobs_unmatched))
+  print("\n")
+
+  print("Liste des employeurs et positions pourvus au premier tour:")
+  stats = {}
+  employers = model["employers_names"]
+  pops = model["employers_popularities"]
+  for name in employers:
+    stats[name] = 0
+
+  for job_id in range(nb_jobs):
+    is_matched = (matchJ[job_id] != None)
+    if is_matched:
+      name = model["jobs_names"][job_id]
+      stats[name] = stats[name] + 1
+  
+  sorted_employers_ids = sorted(range(len(employers)), key=lambda x: - pops[x])
+  for employer_id in sorted_employers_ids:
+    nb_matched = stats[employers[employer_id]]
+    nb_to_match = model["employers_capacities"][employer_id]
+    name = employers[employer_id]
+    if nb_matched > 0:
+      print("'{}' \t: {} / {} position(s) pourvue(s).".format(name[:60].ljust(60), nb_matched, nb_to_match))
+
+  print("\n")
+
+  print("Liste des employeurs et positions à pourvoir au second tour:")
+  sorted_employers_ids = sorted(range(len(employers)), key=lambda x: - pops[x])
+  for employer_id in sorted_employers_ids:
+    nb_matched = stats[employers[employer_id]]
+    nb_to_match = model["employers_capacities"][employer_id] - nb_matched
+    name = employers[employer_id]
+    if nb_to_match > 0:
+      print("'{}' \t: {} position(s) à pourvoir.".format(name[:60].ljust(60), nb_to_match))
+
+      
+if __name__ == "__main__":
+  filename = "data/2022.csv"
+
+  try:
+    model = deserialize("model")
+  except:
+    model = compute_model_from_historique(filename)
+    # save to csv and json
+    serialize(model, "model")
+  
+  #generates a matrix of log pop 
+  logpop = generate_logpop(model)
+  
+  #draws full preferences
+  prefJ, prefC = run.draw_profile(logpop)
+        
+  # truncate the preference of jobs
+  prefJshort, prefCshort = truncate(prefJ, prefC)
+      
+  # run deferred acceptance
+  matchJ, matchC = run.deferred_acceptance(prefJshort, prefCshort)
+
+  #print the results
+  print_result(model, matchJ, matchC)
+

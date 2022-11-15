@@ -167,13 +167,13 @@ def deserialize(model,filename):
     return json.load(f)
 
 
-def select_wishes(pr):
+def select_wishes(pr, params):
 
-  nb_favorite = 5
-  nb_medium = 3
-  nb_safe = 3
-  min_rank_medium = 6
-  min_rank_safe = 1 + len(pr) // 2
+  nb_favorite = params["nb_favorite"]
+  nb_medium = params["nb_medium"]
+  nb_safe = params["nb_safe"]
+  min_rank_medium = params["min_rank_medium"]
+  min_rank_safe = params["min_rank_safe"]
 
   # truncate the preference of candidates, 10 wishes each
   # 5 favorite 
@@ -197,11 +197,12 @@ def select_wishes(pr):
 
   return result
 
-def select_auditions(job_id, nb_jobs, pref, prefC):
+def select_auditions(job_id, nb_jobs, pref, prefC, params):
 
   #more auditions for less popular jobs
-  #from 8 auditions for the most popular to 16 auditions for the least popular  
-  auditions_nb = 8 + (8 * job_id) // nb_jobs
+  #from 8 auditions for the most popular to 16 auditions for the least popular 
+  nb_min_auditions = params["nb_min_auditions"] 
+  auditions_nb = nb_min_auditions + (nb_min_auditions * job_id) // nb_jobs
 
   #we add candidates who made a wishes, until the nb of auditions is reached
   result = []
@@ -214,32 +215,67 @@ def select_auditions(job_id, nb_jobs, pref, prefC):
 
   return result
 
-def truncate(prefJ, prefC):
-  prefCtrunc = [ select_wishes(pr) for pr in prefC ]
+def truncate(prefJ, prefC, params):
+  prefCtrunc = [ select_wishes(pr, params) for pr in prefC ]
   prefJtrunc = []
   for job_id in range(len(prefJ)):
-    auditions = select_auditions(job_id, len(prefJ), prefJ[job_id],prefC)
+    auditions = select_auditions(job_id, len(prefJ), prefJ[job_id],prefC,params)
     prefJtrunc.append(auditions)
   return prefJtrunc, prefCtrunc
 
-def print_result(model, matchJ, matchC):
+def print_result(model, matchJ, matchC, prefJshort, prefCshort, params):
+
+  print("\n\n****************************************************************")
+  print("Paramètres du modèle")
+
+  percent = int(100 * params["nb_voeux"] / params["nb_jobs"])
+  print("\tLes candidats choisissent {} voeux (soit {}% du nombre de positions), "
+  .format(params["nb_favorite"] + params["nb_medium"]+ params["nb_safe"],percent)
+      + "en sélectionnant leurs {} favoris plus {} voeux plus accessibles plus {} voeux de secours."
+    .format(params["nb_favorite"], params["nb_medium"], params["nb_safe"])
+    )
+
+  print("\tLes employeurs auditionnent pour chaque position entre {} et {} candidats, selon leur popularité."\
+    .format(params["nb_min_auditions"] , 2 * params["nb_min_auditions"] ) )
+
+  print("\tA l'issue des classements des candidats auditionnés, les candidats sont affectés en utilisant l'algorithme de Gale-Shapley")
   nb_cand = len(matchC)
   nb_cand_unmatched = matchC.count(None)
   nb_cand_matched = nb_cand - nb_cand_unmatched
+
   nb_jobs = len(matchJ)
   nb_jobs_unmatched = matchJ.count(None)
   nb_jobs_matched = nb_jobs - nb_jobs_unmatched
 
+  rank_pref_match = [ None if matchC[id] == None else prefCshort[id].index(matchC[id]) for id in range(nb_cand)]
+  matched_to_favourite = len(list(filter(lambda rank : rank == 1 ,rank_pref_match)))
+  matched_to_favourites = len(list(filter(lambda rank : rank is not None and rank <= 3 ,rank_pref_match)))
+  avg_match_rank = np.average(list(filter(lambda x : x is not None, rank_pref_match)))
+
+  rank_pref_match_j = [ None if matchJ[id] == None else prefJshort[id].index(matchJ[id]) for id in range(nb_jobs)]
+  matched_to_favourite_j = len(list(filter(lambda rank : rank == 1 ,rank_pref_match_j)))
+  matched_to_favourites_j = len(list(filter(lambda rank : rank is not None and rank <= 3 ,rank_pref_match_j)))
+  avg_match_rank_j = np.average(list(filter(lambda x : x is not None, rank_pref_match_j)))
+
   print("\n\n")
-  print("Nombre de candidats avec affectation à l'issue du 1er tour {} / {}.\n".format(nb_cand_matched , nb_cand))
-  print("Nombre de positions pourvues à l'issue du 1er tour {} / {}.\n".format(nb_jobs_matched, nb_jobs))
+  print("Efficacité du premier tour")
+  print("\tNombre de candidats avec affectation à l'issue du 1er tour {} / {}.".format(nb_cand_matched , nb_cand))
+  print("\tNombre de positions pourvues à l'issue du 1er tour {} / {}.".format(nb_jobs_matched, nb_jobs))
   print("\n")
-
-  print("Nombre de candidats au second tour {}.\n".format(nb_cand_unmatched))
-  print("Nombre de jobs au second tour {}.\n".format(nb_jobs_unmatched))
+  print("\tNombre de candidats participant au second tour {}.".format(nb_cand_unmatched))
+  print("\tNombre de positions proposées au second tour {}.".format(nb_jobs_unmatched))
   print("\n")
-
-  print("Liste des employeurs et positions pourvus au premier tour:")
+  print("Adéquation préférences candidats")
+  print("\tNombre de candidats affectés à leur position préférée {}.".format(matched_to_favourite))
+  print("\tNombre de candidats affectés à un de leurs trois premières positions préférées {}.".format(matched_to_favourites))
+  print("\tRang moyen dans les préférences candidats de la position obtenue {}.".format(int(avg_match_rank)))
+  print("\n")
+  print("Adéquation préférences formations")
+  print("\tNombre de positions recrutant leur candidat préféré {}.".format(matched_to_favourite_j))
+  print("\tNombre de positions recrutant un de leurs trois premiers candidats préférés {}.".format(matched_to_favourites_j))
+  print("\tRang moyen dans les préférences des positions du candidat recruté {}.".format(int(avg_match_rank_j)))
+  
+  print("Liste des employeurs et positions pourvus au premier tour:\n")
   stats = {}
   employers = model["employers_names"]
   pops = model["employers_popularities"]
@@ -262,7 +298,7 @@ def print_result(model, matchJ, matchC):
 
   print("\n")
 
-  print("Liste des employeurs et positions à pourvoir au second tour:")
+  print("Liste des employeurs et positions à pourvoir au second tour:\n")
   sorted_employers_ids = sorted(range(len(employers)), key=lambda x: - pops[x])
   for employer_id in sorted_employers_ids:
     nb_matched = stats[employers[employer_id]]
@@ -271,7 +307,30 @@ def print_result(model, matchJ, matchC):
     if nb_to_match > 0:
       print("'{}' \t: {} position(s) à pourvoir.".format(name[:60].ljust(60), nb_to_match))
 
+def run_experiment(model,params, silent):
+
+  #generates a matrix of log pop 
+  logpop = generate_logpop(model)
+  
+  #draws full preferences
+  prefJ, prefC = run.draw_profile(logpop)
+
+  # truncate the preference of jobs
+  prefJshort, prefCshort = truncate(prefJ, prefC, params)
       
+  # run deferred acceptance
+  matchJ, matchC = run.deferred_acceptance(prefJshort, prefCshort)
+  
+  nb_cand = len(matchC)
+  nb_cand_unmatched = matchC.count(None)
+  nb_cand_matched = nb_cand - nb_cand_unmatched
+
+  #print the results
+  if not silent:
+    print_result(model, matchJ, matchC, prefJshort, prefCshort, params)
+
+  return nb_cand_matched
+
 if __name__ == "__main__":
   filename = "data/2022.csv"
 
@@ -282,18 +341,29 @@ if __name__ == "__main__":
     # save to csv and json
     serialize(model, "model")
   
-  #generates a matrix of log pop 
-  logpop = generate_logpop(model)
-  
-  #draws full preferences
-  prefJ, prefC = run.draw_profile(logpop)
-        
-  # truncate the preference of jobs
-  prefJshort, prefCshort = truncate(prefJ, prefC)
-      
-  # run deferred acceptance
-  matchJ, matchC = run.deferred_acceptance(prefJshort, prefCshort)
+  nb_jobs = len(model["jobs_names"])
+  min_nb_voeux = int(np.ceil(0.15 * nb_jobs))
 
-  #print the results
-  print_result(model, matchJ, matchC)
+  for nb_voeux in (min_nb_voeux, 2 * min_nb_voeux):
+    for nb_min_auditions in (8,15):
+      nb_favorite = nb_voeux // 2
+      nb_medium = int(np.ceil(nb_voeux / 4))
+      nb_safe = nb_voeux - nb_medium - nb_favorite
+      params = {
+        "nb_jobs" : nb_jobs,
+        "min_nb_voeux" : min_nb_voeux,
+        "nb_voeux" : nb_voeux,
+        "nb_favorite" : nb_favorite,
+        "nb_medium" : nb_medium,
+        "nb_safe" : nb_safe,
+        "min_rank_medium" : nb_favorite  + 1,
+        "min_rank_safe" :  1 + nb_jobs // 2,
+        "nb_min_auditions" : nb_min_auditions
+      }
+      for i in range(100):
+        silent = (i != 0)
+        nb_matched = []
+        nb_matched.append(run_experiment(model, params, silent))
+      print("******\n Avg matched {}".format(int(np.average(nb_matched))))
+
 

@@ -72,7 +72,8 @@ Pr[a > b > ... > z] = pop[a] / (pop[a]+pop[b]+...+pop[z])
 def draw_pref(logpop):
   n = len(logpop)
   r = np.log(-np.log(np.random.rand(n)))
-  return sorted(range(n), key=lambda i:r[i]-logpop[i])
+  result = sorted(range(n), key=lambda i:r[i]-logpop[i])
+  return result
 
 def draw_profile(logpop):
   nbPositions, nbStudents = logpop.shape

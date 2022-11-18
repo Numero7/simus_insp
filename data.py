@@ -4,7 +4,8 @@ import os
 import run as run
 import random as rnd
 import json as json
-    
+import sys as sys
+
 """
 load a realistic popularity profile from 2022 data
 """
@@ -162,7 +163,7 @@ def serialize(model,filename):
   with open(filename + ".json", "w") as f:
     json.dump(model, f)
 
-def deserialize(model,filename):
+def deserialize(filename):
   with open(filename + ".json", "r") as f:
     return json.load(f)
 
@@ -175,11 +176,17 @@ def select_wishes(pr, params):
   min_rank_medium = params["min_rank_medium"]
   min_rank_safe = params["min_rank_safe"]
 
-  # truncate the preference of candidates, 10 wishes each
-  # 5 favorite 
+  
+  # truncate the preference of candidates, (nb_favorite+nb_medium+nb_safe) wishes each
+  
+  # nb_favorite "favorite" wishes
   result = [pr[i] for i in range(nb_favorite)]
 
-  # 3 medium, meaning with absolute rank between 6 and len(pr)//2
+  # nb_medium "medium" wishes, meaning with rank in the popularities order of jobs
+  # in the interval [min_rank_medium, min_rank_safe]
+  #
+  # remark that jobs in the model are sorted by decreasing popularity hence job_id
+  # is the rank in the popularity order
   for i in range(nb_favorite + 1,len(pr)):
     job_id = pr[i]
     if not job_id in result and min_rank_medium <= job_id <= min_rank_safe:
@@ -187,7 +194,8 @@ def select_wishes(pr, params):
       if(len(result) >= nb_favorite + nb_medium):
         break
   
-  # 3 secure
+  # min_rank_safe "secure" wishes with with rank in the popularities order of jobs
+  # strictly above min_rank_safe
   for i in range(nb_favorite + 1,len(pr)):
     job_id = pr[i]
     if not job_id in result and min_rank_safe < job_id:
@@ -229,7 +237,7 @@ def print_result(model, matchJ, matchC, prefJshort, prefCshort, params):
   print("Paramètres du modèle")
 
   percent = int(100 * params["nb_voeux"] / params["nb_jobs"])
-  print("\tLes candidats choisissent {} voeux (soit {}% du nombre de positions), "
+  print("\tLes candidats choisissent {} voeux (soit {}% du nombre de postes), "
   .format(params["nb_favorite"] + params["nb_medium"]+ params["nb_safe"],percent)
       + "en sélectionnant leurs {} favoris plus {} voeux plus accessibles plus {} voeux de secours."
     .format(params["nb_favorite"], params["nb_medium"], params["nb_safe"])
@@ -257,25 +265,24 @@ def print_result(model, matchJ, matchC, prefJshort, prefCshort, params):
   matched_to_favourites_j = len(list(filter(lambda rank : rank is not None and rank <= 3 ,rank_pref_match_j)))
   avg_match_rank_j = np.average(list(filter(lambda x : x is not None, rank_pref_match_j)))
 
-  print("\n\n")
   print("Efficacité du premier tour")
   print("\tNombre de candidats avec affectation à l'issue du 1er tour {} / {}.".format(nb_cand_matched , nb_cand))
-  print("\tNombre de positions pourvues à l'issue du 1er tour {} / {}.".format(nb_jobs_matched, nb_jobs))
-  print("\n")
+  print("\tNombre de postes pourvues à l'issue du 1er tour {} / {}.".format(nb_jobs_matched, nb_jobs))
   print("\tNombre de candidats participant au second tour {}.".format(nb_cand_unmatched))
-  print("\tNombre de positions proposées au second tour {}.".format(nb_jobs_unmatched))
+  print("\tNombre de postes proposées au second tour {}.".format(nb_jobs_unmatched))
   print("\n")
   print("Adéquation préférences candidats")
   print("\tNombre de candidats affectés à leur position préférée {}.".format(matched_to_favourite))
-  print("\tNombre de candidats affectés à un de leurs trois premières positions préférées {}.".format(matched_to_favourites))
+  print("\tNombre de candidats affectés à un de leurs trois premières postes préférées {}.".format(matched_to_favourites))
   print("\tRang moyen dans les préférences candidats de la position obtenue {}.".format(int(avg_match_rank)))
   print("\n")
   print("Adéquation préférences formations")
-  print("\tNombre de positions recrutant leur candidat préféré {}.".format(matched_to_favourite_j))
-  print("\tNombre de positions recrutant un de leurs trois premiers candidats préférés {}.".format(matched_to_favourites_j))
-  print("\tRang moyen dans les préférences des positions du candidat recruté {}.".format(int(avg_match_rank_j)))
+  print("\tNombre de postes recrutant leur candidat préféré {}.".format(matched_to_favourite_j))
+  print("\tNombre de postes recrutant un de leurs trois premiers candidats préférés {}.".format(matched_to_favourites_j))
+  print("\tRang moyen dans les préférences des postes du candidat recruté {}.".format(int(avg_match_rank_j)))
   
-  print("Liste des employeurs et positions pourvus au premier tour:\n")
+  print("\n")
+  print("Liste des employeurs et postes pourvus au premier tour:\n")
   stats = {}
   employers = model["employers_names"]
   pops = model["employers_popularities"]
@@ -294,11 +301,11 @@ def print_result(model, matchJ, matchC, prefJshort, prefCshort, params):
     nb_to_match = model["employers_capacities"][employer_id]
     name = employers[employer_id]
     if nb_matched > 0:
-      print("'{}' \t: {} / {} position(s) pourvue(s).".format(name[:60].ljust(60), nb_matched, nb_to_match))
+      print("'{}' \t: {} / {}.".format(name[:60].ljust(60), nb_matched, nb_to_match))
 
   print("\n")
 
-  print("Liste des employeurs et positions à pourvoir au second tour:\n")
+  print("Liste des employeurs et postes à pourvoir au second tour:\n")
   sorted_employers_ids = sorted(range(len(employers)), key=lambda x: - pops[x])
   for employer_id in sorted_employers_ids:
     nb_matched = stats[employers[employer_id]]
@@ -332,20 +339,32 @@ def run_experiment(model,params, silent):
   return nb_cand_matched
 
 if __name__ == "__main__":
-  filename = "data/2022.csv"
+  if len(sys.argv) <= 1 or len(sys.argv) > 2:
+    print("Usage: {} [model_filename] ".format(sys.argv[0]), file=sys.stderr)
+    model_name = "models/model_medium"
+    #sys.exit(0)
+  else:
+    model_name = sys.argv[1]
 
+  filename = "data/2022_medium.csv"
   try:
-    model = deserialize("model")
-  except:
+    model = deserialize(model_name)
+  except Exception as e:
     model = compute_model_from_historique(filename)
     # save to csv and json
-    serialize(model, "model")
+    serialize(model, model_name)
+  
   
   nb_jobs = len(model["jobs_names"])
+
+  #nombre minimal de voeux tel que fixé dans le projet de décret
   min_nb_voeux = int(np.ceil(0.15 * nb_jobs))
 
+  #nombre minimal d'auditions tel que fixé dans le projet de décret
+  min_nb_auditions = 8
+
   for nb_voeux in (min_nb_voeux, 2 * min_nb_voeux):
-    for nb_min_auditions in (8,15):
+    for nb_min_auditions in (min_nb_auditions,2*min_nb_auditions - 1):
       nb_favorite = nb_voeux // 2
       nb_medium = int(np.ceil(nb_voeux / 4))
       nb_safe = nb_voeux - nb_medium - nb_favorite
@@ -360,10 +379,15 @@ if __name__ == "__main__":
         "min_rank_safe" :  1 + nb_jobs // 2,
         "nb_min_auditions" : nb_min_auditions
       }
-      for i in range(100):
+      nb_matched_stats = []
+      for i in range(500):
         silent = (i != 0)
-        nb_matched = []
-        nb_matched.append(run_experiment(model, params, silent))
-      print("******\n Avg matched {}".format(int(np.average(nb_matched))))
+        nb_matched_stats.append(run_experiment(model, params, silent))
+      nb_candidates = model["nb_candidates"]
+      avg_matched = int(np.average(nb_matched_stats))
+      min_matched = np.min(nb_matched_stats)
+      max_matched = np.max(nb_matched_stats)
+      print("\n******\nnb_voeux {} nb_min_auditions {} ".format(nb_voeux, nb_min_auditions), file=sys.stderr)
+      print("[min,avg,max] matched [{},{},{}]/{}\n".format(min_matched, avg_matched, max_matched, nb_candidates), file=sys.stderr)
 
 

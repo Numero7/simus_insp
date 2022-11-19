@@ -1,0 +1,257 @@
+
+
+****************************************************************
+Paramètres du modèle
+	Les candidats choisissent 15 voeux (soit 15% du nombre de postes), en sélectionnant leurs 7 favoris plus 4 voeux plus accessibles plus 4 voeux de secours.
+	Les employeurs auditionnent pour chaque position entre 8 et 16 candidats, selon leur popularité.
+	A l'issue des classements des candidats auditionnés, les candidats sont affectés en utilisant l'algorithme de Gale-Shapley
+Efficacité du premier tour
+	Nombre de candidats avec affectation à l'issue du 1er tour 66 / 82.
+	Nombre de postes pourvues à l'issue du 1er tour 66 / 100.
+	Nombre de candidats participant au second tour 16.
+	Nombre de postes proposées au second tour 34.
+
+
+Adéquation préférences candidats
+	Nombre de candidats affectés à leur position préférée 5.
+	Nombre de candidats affectés à un de leurs trois premières postes préférées 17.
+	Rang moyen dans les préférences candidats de la position obtenue 6.
+
+
+Adéquation préférences formations
+	Nombre de postes recrutant leur candidat préféré 7.
+	Nombre de postes recrutant un de leurs trois premiers candidats préférés 43.
+	Rang moyen dans les préférences des postes du candidat recruté 3.
+
+
+Liste des employeurs et postes pourvus au premier tour:
+
+'Inspection générale des finances                            ' 	: 2 / 2.
+'Cour des comptes                                            ' 	: 2 / 2.
+'Conseil d'Etat                                              ' 	: 2 / 2.
+'Inspection générale des affaires sociales                   ' 	: 1 / 1.
+'Ministère de l'Economie, des Finances et de la Souveraineté ' 	: 16 / 21.
+'Ministère de l'Europe et des Affaires étrangères            ' 	: 3 / 4.
+'Ministère du travail, du plein emploi et de l’insertion, min' 	: 9 / 13.
+'Tribunaux administratifs et cours administratives d'appel   ' 	: 6 / 6.
+'Ministère de l'Intérieur                                    ' 	: 7 / 9.
+'Ministère de la Culture                                     ' 	: 2 / 3.
+'Ministère de la Transition écologique et de la Cohésion des ' 	: 2 / 5.
+'Ministère des Armées                                        ' 	: 2 / 5.
+'Ministère de l'Agriculture et de la Souveraineté alimentaire' 	: 4 / 5.
+'Ministère de la transformation et de la fonction publiques  ' 	: 2 / 3.
+'Ministère de l'intérieur                                    ' 	: 1 / 2.
+'Ministère de la Justice                                     ' 	: 1 / 4.
+'Ville de Paris                                              ' 	: 3 / 4.
+'Chambres régionales des comptes                             ' 	: 1 / 3.
+
+
+Liste des employeurs et postes à pourvoir au second tour:
+
+'Ministère de l'Economie, des Finances et de la Souveraineté ' 	: 5 position(s) à pourvoir.
+'Ministère de l'Europe et des Affaires étrangères            ' 	: 1 position(s) à pourvoir.
+'Ministère du travail, du plein emploi et de l’insertion, min' 	: 4 position(s) à pourvoir.
+'Ministère de l'Intérieur                                    ' 	: 2 position(s) à pourvoir.
+'Ministère de la Culture                                     ' 	: 1 position(s) à pourvoir.
+'Inspection générale de l'administration                     ' 	: 1 position(s) à pourvoir.
+'Ministère de la Transition écologique et de la Cohésion des ' 	: 3 position(s) à pourvoir.
+'Ministère des Armées                                        ' 	: 3 position(s) à pourvoir.
+'Ministère de l'Agriculture et de la Souveraineté alimentaire' 	: 1 position(s) à pourvoir.
+'Ministère de la transformation et de la fonction publiques  ' 	: 1 position(s) à pourvoir.
+'Ministère de l'intérieur                                    ' 	: 1 position(s) à pourvoir.
+'Ministère de la Justice                                     ' 	: 3 position(s) à pourvoir.
+'Ministère de l'Education nationale, de la Jeunesse et des Sp' 	: 4 position(s) à pourvoir.
+'Ville de Paris                                              ' 	: 1 position(s) à pourvoir.
+'Chambres régionales des comptes                             ' 	: 2 position(s) à pourvoir.
+'Caisse des dépôts et consignations                          ' 	: 1 position(s) à pourvoir.
+
+
+****************************************************************
+Paramètres du modèle
+	Les candidats choisissent 15 voeux (soit 15% du nombre de postes), en sélectionnant leurs 7 favoris plus 4 voeux plus accessibles plus 4 voeux de secours.
+	Les employeurs auditionnent pour chaque position entre 15 et 30 candidats, selon leur popularité.
+	A l'issue des classements des candidats auditionnés, les candidats sont affectés en utilisant l'algorithme de Gale-Shapley
+Efficacité du premier tour
+	Nombre de candidats avec affectation à l'issue du 1er tour 74 / 82.
+	Nombre de postes pourvues à l'issue du 1er tour 74 / 100.
+	Nombre de candidats participant au second tour 8.
+	Nombre de postes proposées au second tour 26.
+
+
+Adéquation préférences candidats
+	Nombre de candidats affectés à leur position préférée 6.
+	Nombre de candidats affectés à un de leurs trois premières postes préférées 19.
+	Rang moyen dans les préférences candidats de la position obtenue 6.
+
+
+Adéquation préférences formations
+	Nombre de postes recrutant leur candidat préféré 11.
+	Nombre de postes recrutant un de leurs trois premiers candidats préférés 41.
+	Rang moyen dans les préférences des postes du candidat recruté 5.
+
+
+Liste des employeurs et postes pourvus au premier tour:
+
+'Inspection générale des finances                            ' 	: 2 / 2.
+'Cour des comptes                                            ' 	: 2 / 2.
+'Conseil d'Etat                                              ' 	: 2 / 2.
+'Inspection générale des affaires sociales                   ' 	: 1 / 1.
+'Ministère de l'Economie, des Finances et de la Souveraineté ' 	: 17 / 21.
+'Ministère de l'Europe et des Affaires étrangères            ' 	: 4 / 4.
+'Ministère du travail, du plein emploi et de l’insertion, min' 	: 10 / 13.
+'Tribunaux administratifs et cours administratives d'appel   ' 	: 4 / 6.
+'Ministère de l'Intérieur                                    ' 	: 7 / 9.
+'Ministère de la Culture                                     ' 	: 3 / 3.
+'Ministère de la Transition écologique et de la Cohésion des ' 	: 3 / 5.
+'Ministère des Armées                                        ' 	: 2 / 5.
+'Ministère de l'Agriculture et de la Souveraineté alimentaire' 	: 2 / 5.
+'Ministère de la transformation et de la fonction publiques  ' 	: 2 / 3.
+'Ministère de l'intérieur                                    ' 	: 1 / 2.
+'Ministère de la Justice                                     ' 	: 3 / 4.
+'Ministère de l'Education nationale, de la Jeunesse et des Sp' 	: 2 / 4.
+'Ville de Paris                                              ' 	: 4 / 4.
+'Chambres régionales des comptes                             ' 	: 3 / 3.
+
+
+Liste des employeurs et postes à pourvoir au second tour:
+
+'Ministère de l'Economie, des Finances et de la Souveraineté ' 	: 4 position(s) à pourvoir.
+'Ministère du travail, du plein emploi et de l’insertion, min' 	: 3 position(s) à pourvoir.
+'Tribunaux administratifs et cours administratives d'appel   ' 	: 2 position(s) à pourvoir.
+'Ministère de l'Intérieur                                    ' 	: 2 position(s) à pourvoir.
+'Inspection générale de l'administration                     ' 	: 1 position(s) à pourvoir.
+'Ministère de la Transition écologique et de la Cohésion des ' 	: 2 position(s) à pourvoir.
+'Ministère des Armées                                        ' 	: 3 position(s) à pourvoir.
+'Ministère de l'Agriculture et de la Souveraineté alimentaire' 	: 3 position(s) à pourvoir.
+'Ministère de la transformation et de la fonction publiques  ' 	: 1 position(s) à pourvoir.
+'Ministère de l'intérieur                                    ' 	: 1 position(s) à pourvoir.
+'Ministère de la Justice                                     ' 	: 1 position(s) à pourvoir.
+'Ministère de l'Education nationale, de la Jeunesse et des Sp' 	: 2 position(s) à pourvoir.
+'Caisse des dépôts et consignations                          ' 	: 1 position(s) à pourvoir.
+
+
+****************************************************************
+Paramètres du modèle
+	Les candidats choisissent 30 voeux (soit 30% du nombre de postes), en sélectionnant leurs 15 favoris plus 8 voeux plus accessibles plus 7 voeux de secours.
+	Les employeurs auditionnent pour chaque position entre 8 et 16 candidats, selon leur popularité.
+	A l'issue des classements des candidats auditionnés, les candidats sont affectés en utilisant l'algorithme de Gale-Shapley
+Efficacité du premier tour
+	Nombre de candidats avec affectation à l'issue du 1er tour 80 / 82.
+	Nombre de postes pourvues à l'issue du 1er tour 80 / 100.
+	Nombre de candidats participant au second tour 2.
+	Nombre de postes proposées au second tour 20.
+
+
+Adéquation préférences candidats
+	Nombre de candidats affectés à leur position préférée 4.
+	Nombre de candidats affectés à un de leurs trois premières postes préférées 14.
+	Rang moyen dans les préférences candidats de la position obtenue 9.
+
+
+Adéquation préférences formations
+	Nombre de postes recrutant leur candidat préféré 14.
+	Nombre de postes recrutant un de leurs trois premiers candidats préférés 55.
+	Rang moyen dans les préférences des postes du candidat recruté 2.
+
+
+Liste des employeurs et postes pourvus au premier tour:
+
+'Inspection générale des finances                            ' 	: 2 / 2.
+'Cour des comptes                                            ' 	: 2 / 2.
+'Conseil d'Etat                                              ' 	: 2 / 2.
+'Inspection générale des affaires sociales                   ' 	: 1 / 1.
+'Ministère de l'Economie, des Finances et de la Souveraineté ' 	: 19 / 21.
+'Ministère de l'Europe et des Affaires étrangères            ' 	: 4 / 4.
+'Ministère du travail, du plein emploi et de l’insertion, min' 	: 12 / 13.
+'Tribunaux administratifs et cours administratives d'appel   ' 	: 5 / 6.
+'Ministère de l'Intérieur                                    ' 	: 9 / 9.
+'Ministère de la Culture                                     ' 	: 3 / 3.
+'Inspection générale de l'administration                     ' 	: 1 / 1.
+'Ministère de la Transition écologique et de la Cohésion des ' 	: 3 / 5.
+'Ministère des Armées                                        ' 	: 4 / 5.
+'Ministère de l'Agriculture et de la Souveraineté alimentaire' 	: 3 / 5.
+'Ministère de la transformation et de la fonction publiques  ' 	: 1 / 3.
+'Ministère de l'intérieur                                    ' 	: 1 / 2.
+'Ministère de la Justice                                     ' 	: 3 / 4.
+'Ministère de l'Education nationale, de la Jeunesse et des Sp' 	: 1 / 4.
+'Ville de Paris                                              ' 	: 4 / 4.
+
+
+Liste des employeurs et postes à pourvoir au second tour:
+
+'Ministère de l'Economie, des Finances et de la Souveraineté ' 	: 2 position(s) à pourvoir.
+'Ministère du travail, du plein emploi et de l’insertion, min' 	: 1 position(s) à pourvoir.
+'Tribunaux administratifs et cours administratives d'appel   ' 	: 1 position(s) à pourvoir.
+'Ministère de la Transition écologique et de la Cohésion des ' 	: 2 position(s) à pourvoir.
+'Ministère des Armées                                        ' 	: 1 position(s) à pourvoir.
+'Ministère de l'Agriculture et de la Souveraineté alimentaire' 	: 2 position(s) à pourvoir.
+'Ministère de la transformation et de la fonction publiques  ' 	: 2 position(s) à pourvoir.
+'Ministère de l'intérieur                                    ' 	: 1 position(s) à pourvoir.
+'Ministère de la Justice                                     ' 	: 1 position(s) à pourvoir.
+'Ministère de l'Education nationale, de la Jeunesse et des Sp' 	: 3 position(s) à pourvoir.
+'Chambres régionales des comptes                             ' 	: 3 position(s) à pourvoir.
+'Caisse des dépôts et consignations                          ' 	: 1 position(s) à pourvoir.
+
+
+****************************************************************
+Paramètres du modèle
+	Les candidats choisissent 30 voeux (soit 30% du nombre de postes), en sélectionnant leurs 15 favoris plus 8 voeux plus accessibles plus 7 voeux de secours.
+	Les employeurs auditionnent pour chaque position entre 15 et 30 candidats, selon leur popularité.
+	A l'issue des classements des candidats auditionnés, les candidats sont affectés en utilisant l'algorithme de Gale-Shapley
+Efficacité du premier tour
+	Nombre de candidats avec affectation à l'issue du 1er tour 80 / 82.
+	Nombre de postes pourvues à l'issue du 1er tour 80 / 100.
+	Nombre de candidats participant au second tour 2.
+	Nombre de postes proposées au second tour 20.
+
+
+Adéquation préférences candidats
+	Nombre de candidats affectés à leur position préférée 1.
+	Nombre de candidats affectés à un de leurs trois premières postes préférées 18.
+	Rang moyen dans les préférences candidats de la position obtenue 8.
+
+
+Adéquation préférences formations
+	Nombre de postes recrutant leur candidat préféré 7.
+	Nombre de postes recrutant un de leurs trois premiers candidats préférés 44.
+	Rang moyen dans les préférences des postes du candidat recruté 4.
+
+
+Liste des employeurs et postes pourvus au premier tour:
+
+'Inspection générale des finances                            ' 	: 2 / 2.
+'Cour des comptes                                            ' 	: 2 / 2.
+'Conseil d'Etat                                              ' 	: 2 / 2.
+'Inspection générale des affaires sociales                   ' 	: 1 / 1.
+'Ministère de l'Economie, des Finances et de la Souveraineté ' 	: 20 / 21.
+'Ministère de l'Europe et des Affaires étrangères            ' 	: 4 / 4.
+'Ministère du travail, du plein emploi et de l’insertion, min' 	: 12 / 13.
+'Tribunaux administratifs et cours administratives d'appel   ' 	: 5 / 6.
+'Ministère de l'Intérieur                                    ' 	: 9 / 9.
+'Ministère de la Culture                                     ' 	: 1 / 3.
+'Inspection générale de l'administration                     ' 	: 1 / 1.
+'Ministère de la Transition écologique et de la Cohésion des ' 	: 3 / 5.
+'Ministère des Armées                                        ' 	: 2 / 5.
+'Ministère de l'Agriculture et de la Souveraineté alimentaire' 	: 3 / 5.
+'Ministère de la transformation et de la fonction publiques  ' 	: 2 / 3.
+'Ministère de la Justice                                     ' 	: 3 / 4.
+'Ministère de l'Education nationale, de la Jeunesse et des Sp' 	: 1 / 4.
+'Ville de Paris                                              ' 	: 4 / 4.
+'Chambres régionales des comptes                             ' 	: 2 / 3.
+'Caisse des dépôts et consignations                          ' 	: 1 / 1.
+
+
+Liste des employeurs et postes à pourvoir au second tour:
+
+'Ministère de l'Economie, des Finances et de la Souveraineté ' 	: 1 position(s) à pourvoir.
+'Ministère du travail, du plein emploi et de l’insertion, min' 	: 1 position(s) à pourvoir.
+'Tribunaux administratifs et cours administratives d'appel   ' 	: 1 position(s) à pourvoir.
+'Ministère de la Culture                                     ' 	: 2 position(s) à pourvoir.
+'Ministère de la Transition écologique et de la Cohésion des ' 	: 2 position(s) à pourvoir.
+'Ministère des Armées                                        ' 	: 3 position(s) à pourvoir.
+'Ministère de l'Agriculture et de la Souveraineté alimentaire' 	: 2 position(s) à pourvoir.
+'Ministère de la transformation et de la fonction publiques  ' 	: 1 position(s) à pourvoir.
+'Ministère de l'intérieur                                    ' 	: 2 position(s) à pourvoir.
+'Ministère de la Justice                                     ' 	: 1 position(s) à pourvoir.
+'Ministère de l'Education nationale, de la Jeunesse et des Sp' 	: 3 position(s) à pourvoir.
+'Chambres régionales des comptes                             ' 	: 1 position(s) à pourvoir.

@@ -326,8 +326,8 @@ if __name__ == "__main__":
     for nb_voeux in [min_nb_voeux]:
         for nb_min_auditions in [min_nb_auditions]:
             nb_favorite = nb_voeux // 2
-            nb_medium = int(np.ceil(nb_voeux / 2))
-            nb_safe = 0  # nb_voeux - nb_medium - nb_favorite
+            nb_medium = int(np.ceil(nb_voeux / 3))
+            nb_safe = nb_voeux - nb_medium - nb_favorite
             params = {
                 "nb_jobs": nb_jobs,
                 "min_nb_voeux": min_nb_voeux,
